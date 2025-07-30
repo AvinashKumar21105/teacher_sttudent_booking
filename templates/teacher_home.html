@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teacher Dashboard - Starlight School</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #001f3f, #005082);
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      padding-top: 40px;
+    }
+    .card {
+      background-color: #ffffff10;
+      border: none;
+      border-radius: 15px;
+      padding: 30px;
+      color: white;
+      transition: transform 0.3s ease;
+    }
+    .card:hover {
+      transform: scale(1.02);
+      background-color: #ffffff20;
+    }
+    .dashboard-title {
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .appointment, .message {
+      background-color: #ffffff15;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+    .appointment p, .message p {
+      margin: 5px 0;
+    }
+    .btn-accept, .btn-reject {
+      padding: 6px 16px;
+      margin-right: 10px;
+    }
+    .chat-container {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    input[type="text"] {
+      color: black;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2 class="dashboard-title">Welcome, {{ teacher_name }}</h2>
+
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-5">
+        <div class="card text-center">
+          <h4>Schedule Appointment</h4>
+          <a href="/teacher/schedule">Click here to schedule</a>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="card text-center">
+          <h4>View Messages</h4>
+          <a href="#messages">Scroll to messages</a>
+        </div>
+      </div>
+      <div class="col-md-12 mt-4 text-center">
+        <a href="/logout" class="btn btn-warning text-dark">Logout</a>
+      </div>
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Appointment Requests Section -->
+    <h3 class="text-center mb-4">📅 Appointment Requests</h3>
+    {% if appointments %}
+      {% for a in appointments %}
+        <div class="appointment">
+          <p><strong>👩‍🎓 Student Name:</strong> {{ a.student_name }}</p>
+          <p><strong>📅 Date:</strong> {{ a.date }}</p>
+          <p><strong>🕒 Time:</strong> {{ a.time }}</p>
+          <p><strong>📝 Purpose:</strong> {{ a.purpose }}</p>
+          <p><strong>✉️ Message:</strong> {{ a.message }}</p>
+          <p><strong>🔁 Status:</strong> {{ a.status }}</p>
+
+          {% if a.status == 'pending' %}
+            <form method="POST" action="/teacher/appointment/{{ a.key }}/accept" style="display:inline-block;">
+              <input type="hidden" name="appointment_id" value="{{ a.key }}">
+              <button type="submit" class="btn btn-success btn-accept">Accept</button>
+            </form>
+            <form method="POST" action="/teacher/appointment/{{ a.key }}/reject" style="display:inline-block;">
+              <input type="hidden" name="appointment_id" value="{{ a.key }}">
+              <button type="submit" class="btn btn-danger btn-reject">Reject</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-center">🙅 No appointments yet.</p>
+    {% endif %}
+
+    <hr class="my-5" id="messages">
+
+    <!-- Messages Section -->
+    <h3 class="text-center mb-4">💬 Messages from Students</h3>
+    <div class="chat-container">
+      {% if messages %}
+        {% for m in messages %}
+          <div class="message">
+            <p><strong>👩‍🎓 Student:</strong> {{ m.student_name }}</p>
+            <p><strong>📨 Message:</strong> {{ m.content }}</p>
+            <p><strong>🕒 Time:</strong> {{ m.timestamp }}</p>
+
+            <form method="POST" action="/teacher/messages/reply/{{ m.message_id }}" class="reply-form">
+              <div class="input-group mt-2">
+                <input type="text" name="reply_text" class="form-control reply-input" placeholder="Reply..." required>
+                <button class="btn btn-light" type="submit">Send</button>
+              </div>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-center">📭 No messages yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Fix Enter Key for Reply -->
+  <script>
+    document.querySelectorAll('.reply-input').forEach(input => {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.closest('form').submit();
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

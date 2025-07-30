@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Starlight International - Appointment Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #0a1d3b, #1e3c72);
+      font-family: 'Roboto', sans-serif;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background-color: transparent;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .navbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #fdd835;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+    }
+
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: #ffffff;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+    }
+
+    .hero p {
+      font-size: 1.5rem;
+      color: #f0f0f0;
+      max-width: 700px;
+      margin-bottom: 40px;
+    }
+
+    .card-section {
+      margin-top: 50px;
+    }
+
+    .card-box {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .card-box:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .card-box h3 {
+      color: #1e3c72;
+      font-weight: bold;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+    }
+
+    .btn-custom {
+      background-color: #fdd835;
+      color: #0a1d3b;
+      border-radius: 30px;
+      padding: 12px 30px;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      border: none;
+    }
+
+    .btn-custom:hover {
+      background-color: #fbc02d;
+      transform: scale(1.05);
+    }
+
+    .btn-outline-secondary {
+      color: #1e3c72;
+      border-color: #1e3c72;
+      font-weight: 500;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      border-radius: 30px;
+      padding: 10px 25px;
+    }
+
+    .btn-outline-secondary:hover {
+      background-color: #1e3c72;
+      color: white;
+    }
+
+    footer {
+      background-color: #081528;
+      color: #ccc;
+      text-align: center;
+      padding: 20px 0;
+      position: relative;
+      bottom: 0;
+      width: 100%;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+      }
+
+      .card-box h3 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="navbar-title">Starlight International School</div>
+  </div>
+
+  <div class="container hero">
+    <h1>Welcome to the Appointment Portal</h1>
+    <p class="lead">Schedule appointments seamlessly between Students and Admins</p>
+
+    <div class="row card-section justify-content-center">
+      <div class="col-md-4 mb-4">
+        <div class="card-box">
+          <h3>Student</h3>
+          <a href="/login/student" class="btn btn-custom">Login</a><br>
+          <a href="/register/student" class="btn btn-outline-secondary mt-2">Register</a>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="card-box">
+          <h3>Teacher</h3>
+          <a href="/login/teacher" class="btn btn-custom">Login</a>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="card-box">
+          <h3>Admin</h3>
+          <a href="/login/admin" class="btn btn-custom">Login</a><br>
+          <a href="/register/admin" class="btn btn-outline-secondary mt-2">Register</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Starlight International School | Powered by EduTech Team</p>
+  </footer>
+
+</body>
+</html>

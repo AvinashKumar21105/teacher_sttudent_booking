@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat with {{ teacher.name }}</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #1f4037, #99f2c8);
+      color: #333;
+      padding: 40px;
+      margin: 0;
+    }
+    #chat-box {
+      border: 1px solid #ccc;
+      height: 300px;
+      overflow-y: scroll;
+      padding: 10px;
+      background-color: white;
+      border-radius: 8px;
+    }
+    #chat-form {
+      display: flex;
+      margin-top: 10px;
+    }
+    #chat-form input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #chat-form button {
+      padding: 10px;
+      background-color: #1f4037;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Chat with {{ teacher.name }}</h2>
+<div id="chat-box"></div>
+<form id="chat-form">
+    <input type="text" name="message" id="message" placeholder="Type message" required>
+    <button type="submit">Send</button>
+</form>
+
+<script>
+function loadMessages(){
+    $.getJSON("/chat/messages/{{ teacher.empid }}", function(data){
+        $("#chat-box").html("");
+        data.forEach(function(msg){
+            $("#chat-box").append("<p><b>"+msg.sender+":</b> "+msg.message+"</p>");
+        });
+        $("#chat-box").scrollTop($("#chat-box")[0].scrollHeight);
+    });
+}
+
+$("#chat-form").submit(function(e){
+    e.preventDefault();
+    $.post("/chat/send/{{ teacher.empid }}", $(this).serialize(), function(){
+        $("#message").val('');
+        loadMessages();
+    });
+});
+
+setInterval(loadMessages, 2000);
+loadMessages();
+</script>
+
+</body>
+</html>

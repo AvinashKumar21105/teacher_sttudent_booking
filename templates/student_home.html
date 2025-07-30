@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #1f4037, #99f2c8);
+      color: #333;
+      padding: 40px;
+      margin: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background-color: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    h2 {
+      text-align: center;
+      color: #1f4037;
+      margin-bottom: 30px;
+    }
+    .search-bar {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .search-bar input[type="text"] {
+      padding: 10px;
+      width: 60%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .search-bar button {
+      padding: 10px 16px;
+      background-color: #1f4037;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .teacher, .appointment {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .teacher h3 {
+      margin-top: 0;
+    }
+    .btns {
+      margin-top: 10px;
+    }
+    .btns form {
+      display: inline-block;
+    }
+    .btn {
+      background-color: #1f4037;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 10px;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background-color: #155a48;
+    }
+    hr {
+      border: none;
+      height: 2px;
+      background: #1f4037;
+      margin: 40px 0;
+    }
+    p {
+      margin: 6px 0;
+    }
+    .no-data {
+      text-align: center;
+      color: #777;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🎓 Welcome Student</h2>
+
+    <!-- Search Bar -->
+    <form class="search-bar" method="GET" action="/student/home">
+      <input type="text" name="search" placeholder="🔍 Search Teacher by Name..." value="{{ search_query }}">
+      <button type="submit">Search</button>
+    </form>
+
+    <!-- Teacher List -->
+    {% if teachers %}
+      {% for teacher in teachers %}
+        <div class="teacher">
+          <h3>{{ teacher.name }}</h3>
+          <p><strong>👤 Employee ID:</strong> {{ teacher.empid }}</p>
+          <p><strong>🏫 Department:</strong> {{ teacher.department }}</p>
+          <p><strong>📘 Subject:</strong> {{ teacher.subject }}</p>
+          <div class="btns">
+            <form action="/student/book/{{ teacher.empid }}" method="GET">
+              <button type="submit" class="btn">📅 Book Appointment</button>
+            </form>
+            <form action="/student/message/{{ teacher.empid }}" method="GET">
+              <button type="submit" class="btn">✉️ Send Message</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-data">🚫 No teachers found.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Appointments -->
+    <h2>📅 Your Appointments</h2>
+
+    {% if appointments %}
+      {% for a in appointments %}
+        <div class="appointment">
+          <p><strong>👨‍🏫 Teacher Name:</strong> {{ a.teacher_name }}</p>
+          <p><strong>📅 Date:</strong> {{ a.date }}</p>
+          <p><strong>🕒 Time:</strong> {{ a.time }}</p>
+          <p><strong>📝 Purpose:</strong> {{ a.purpose }}</p>
+          <p><strong>✉️ Message:</strong> {{ a.message }}</p>
+          <p><strong>✅ Status:</strong> {{ a.status }}</p>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-data">🙅 No appointments booked yet.</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>
