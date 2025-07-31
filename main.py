@@ -192,7 +192,7 @@ def student_login():
                     student_data = student.val()
                     if student_data.get("roll_number") == roll and student_data.get("password") == password:
                         session['student_roll'] = roll
-                        session['student_id'] = student.key()
+                        session['student_id'] = student.key()  # Ensure this is set
                         flash("Student login successful!", "success")
                         return redirect(url_for('student_home'))
             flash("Invalid credentials. Try again.", "danger")
@@ -200,6 +200,7 @@ def student_login():
             print(f"Error during student login: {e}")
             flash("Login failed. Please try again.", "danger")
     return render_template("student_login.html")
+
 
 # ---------------- Student Home ---------------- #
 @app.route('/student/home', methods=['GET'])
@@ -268,6 +269,8 @@ def teacher_login():
     return render_template("teacher_login.html")
 
 # ---------------- Teacher Home ---------------- #
+# ---------------- Teacher Home ---------------- #
+# ---------------- Teacher Home ---------------- #
 @app.route('/teacher/home')
 def teacher_home():
     if 'teacher' not in session:
@@ -281,7 +284,7 @@ def teacher_home():
     messages = []
 
     try:
-        # ✅ Fetch appointments for this teacher
+        # Fetch appointments for this teacher
         all_appointments = db.child("appointments").get()
         if all_appointments.each():
             for a in all_appointments.each():
@@ -290,12 +293,11 @@ def teacher_home():
                 if a_data.get('teacher_id') == teacher_id:
                     appointments.append(a_data)
 
-        # ✅ Fetch messages for this teacher
+        # Fetch messages for this teacher
         all_chats = db.child("chats").get()
         if all_chats.each():
             for chat in all_chats.each():
                 chat_id = chat.key()
-                # Chat IDs are stored as student_id_teacher_id
                 if chat_id.endswith(f"_{teacher_id}"):
                     for msg_key, msg in chat.val().items():
                         messages.append({
@@ -315,7 +317,6 @@ def teacher_home():
                            teacher_name=teacher_name,
                            appointments=appointments,
                            messages=messages)
-
 
 # ---------------- Schedule Appointment ---------------- #
 @app.route('/teacher/schedule', methods=['GET', 'POST'])
@@ -442,68 +443,116 @@ def send_message(teacher_empid):
         "message": message,
         "timestamp": timestamp
     })
-    return jsonify({"status": "success"})
+
+    # Redirect to the chat page after sending the message
+    return redirect(url_for('student_open_chat', teacher_empid=teacher_empid))
+
 
 @app.route('/teacher/messages/reply/<message_id>', methods=['POST'])
 def teacher_reply(message_id):
+    print(f"Received reply for message_id: {message_id}")  # Debugging line
     try:
         reply_text = request.form.get('reply_text')
-        teacher_name = "Teacher Name"
+        teacher_name = "Teacher Name"  # Fetch the actual teacher's name from the session if needed
 
         # Path where messages are stored
-        message_ref = db.reference(f'messages/{message_id}')
+        message_ref = db.child('chats').child(message_id)  # Assuming message_id is the chat ID
 
         # Get the original message to know which student sent it
-        message_data = message_ref.get()
+        message_data = message_ref.get().val()
+        print(f"Message data: {message_data}")  # Debugging line
         if not message_data:
             flash("Message not found.", "danger")
-            return redirect(url_for('teacher_dashboard'))
+            return redirect(url_for('teacher_home'))
 
         student_id = message_data.get('student_id')
 
-        # Store the reply under the same message ID or a separate node
-        reply_ref = db.reference('teacher_replies').push()
+        # Store the reply under the same message ID
+        reply_ref = message_ref.child('replies').push()  # Create a 'replies' node under the original message
         reply_ref.set({
             'teacher_name': teacher_name,
             'student_id': student_id,
             'reply_text': reply_text,
             'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         })
+        print("Reply saved successfully.")  # Debugging line
 
         flash("Reply sent successfully!", "success")
     except Exception as e:
         flash(f"Error sending reply: {str(e)}", "danger")
+        print(f"Error details: {str(e)}")  # Log the error for debugging
 
     return redirect(url_for('teacher_home'))
+
 
 @app.route('/student/message/<teacher_empid>', methods=['GET'])
 def student_open_chat(teacher_empid):
     student_id = session.get('student_id')
-    student_name = session.get('student_name')
+    student_name = session.get('student_roll')
 
     if not student_id or not student_name:
         flash("Please log in again to chat.", "danger")
         return redirect(url_for('student_login'))
 
-    messages_ref = db.reference('messages')
-    all_messages = messages_ref.get() or {}
+    chat_id = f"{student_id}_{teacher_empid}"
+    messages_ref = db.child('chats').child(chat_id)
+    chat_messages = messages_ref.get().val() or {}
 
-    chat_messages = []
-    for msg_id, msg in all_messages.items():
-        if msg.get('teacher_empid') == teacher_empid and msg.get('student_id') == student_id:
-            chat_messages.append({
-                'id': msg_id,
-                'content': msg['content'],
-                'reply': msg.get('reply', ''),
-                'timestamp': msg['timestamp'],
-                'from_teacher': bool(msg.get('reply'))
-            })
+    chat_messages_list = []
+    for msg_id, msg in chat_messages.items():
+        replies = msg.get('replies', {})
+        chat_messages_list.append({
+            'id': msg_id,
+            'content': msg.get('message', ''),
+            'timestamp': msg.get('timestamp', ''),
+            'from_teacher': msg.get('sender') != student_name,
+            'replies': [reply for reply in replies.values()]  # Collect replies
+        })
 
     return render_template('chat.html',
                            teacher_empid=teacher_empid,
-                           teacher_name="Teacher",
+                           teacher_name="Teacher",  # Fetch the actual teacher's name if needed
                            student_name=student_name,
-                           chat_messages=chat_messages)
+                           chat_messages=chat_messages_list)
+
+# ---------------- Book Appointment ---------------- #
+@app.route('/student/book/<teacher_empid>', methods=['GET'])
+def book_appointment(teacher_empid):
+    # Fetch teacher details using the empid
+    teacher = db.child("teachers").order_by_child("empid").equal_to(teacher_empid).get().val()
+    if teacher:
+        teacher = list(teacher.values())[0]
+    else:
+        flash("Teacher not found.", "danger")
+        return redirect(url_for('student_home'))
+
+    return render_template("student_appointment.html", teacher=teacher)
+@app.route('/student/submit_appointment', methods=['POST'])
+def submit_appointment():
+    if 'student_id' not in session:
+        flash("Please login to book an appointment.", "danger")
+        return redirect(url_for('student_login'))
+
+    student_id = session['student_id']
+    teacher_id = request.form['teacher_id']
+    date = request.form['date']
+    time = request.form['time']
+    purpose = request.form['purpose']
+    message = request.form['message']
+
+    appointment_data = {
+        'student_id': student_id,
+        'teacher_id': teacher_id,
+        'date': date,
+        'time': time,
+        'purpose': purpose,
+        'message': message,
+        'status': 'pending'
+    }
+
+    db.child("appointments").push(appointment_data)
+    flash("Appointment request submitted successfully!", "success")
+    return redirect(url_for('student_home'))
 
 # ---------------- Logout ---------------- #
 @app.route('/logout')
